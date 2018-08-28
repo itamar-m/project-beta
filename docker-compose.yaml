@@ -1,0 +1,30 @@
+version: '2'
+services:
+  application-web:
+    build:
+      context: "."
+    image: "docker.io/kbulix/web-mysql:latest"
+    ports:
+      - "8080"
+    networks:
+      private-docker-network:
+        ipv4_address: 172.18.0.2
+    container_name: "mysql-application"
+  mysql:
+    image: "mysql:5.7.23"
+    networks:
+      private-docker-network:
+        ipv4_address: 172.18.0.3
+    volumes:
+      - /home/kbulix/devel/mysql/data:/var/lib/mysql
+    container_name: "mysql-db"
+networks:
+  private-docker-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.18.0.0/16
+        gateway: 172.18.0.1
+volumes:
+  data-volume:

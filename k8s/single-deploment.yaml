@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: application-with-mysql-service
+spec:
+  selector:
+    app: application-web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: NodePort
+---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: mysql-claim0
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Mi
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: application-with-mysql
+spec:
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        app: application-web
+    spec:
+      containers:
+      - image: docker.io/kbulix/web-mysql:latest
+        name: application-web
+        ports:
+        - containerPort: 8080
+      - image: mysql:5.7.23
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: x3po
+        name: mysql-db
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-claim0
+      volumes:
+      - name: mysql-claim0
+        persistentVolumeClaim:
+          claimName: mysql-claim0
